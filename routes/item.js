@@ -9,7 +9,7 @@ router
 
 router
   .route("/:id")
-  .put(itemController.ChangeItemStatus)
+  .patch(itemController.ChangeItemStatus)
   .delete(itemController.deleteItem);
 
 router.route("/totalRevenue").get(itemController.getTotalRevenue);

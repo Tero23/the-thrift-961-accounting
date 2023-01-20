@@ -28,6 +28,8 @@ exports.addItem = catchAsync(async (req, res, next) => {
     cost,
     price,
   });
+  const availableItems = await Item.findAll({ where: { status: "Available" } });
+  await redisClient.setEx("items", 3600, JSON.stringify(availableItems));
   res.status(201).json({
     status: "success",
     message: "Item created!",
@@ -43,6 +45,8 @@ exports.ChangeItemStatus = catchAsync(async (req, res, next) => {
   item.status === "Sold"
     ? await Revenue.create({ itemId: item.id, amount: item.price })
     : await Revenue.destroy({ where: { itemId: item.id } });
+  const availableItems = await Item.findAll({ where: { status: "Available" } });
+  await redisClient.setEx("items", 3600, JSON.stringify(availableItems));
   res.status(200).json({
     message: `Item status changed to ${item.status}!`,
     item,
@@ -53,6 +57,8 @@ exports.deleteItem = catchAsync(async (req, res, next) => {
   const item = await Item.findOne({ where: { id: req.params.id } });
   if (!item) return next(new AppError("There is no item with that id!", 404));
   await Item.destroy({ where: { id: item.id } });
+  const availableItems = await Item.findAll({ where: { status: "Available" } });
+  await redisClient.setEx("items", 3600, JSON.stringify(availableItems));
   res.sendStatus(204);
 });
 
