@@ -1,10 +1,13 @@
 import Item from "./components/Item";
 import NewItem from "./components/addingItems/NewItem";
+import Header from "./components/Header";
+import "./App.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
 function App() {
   const [items, setItems] = useState([]);
+  const [revenue, setRevenue] = useState("");
   const addItemHandler = (item) => {
     setItems((prev) => {
       return [item, ...prev];
@@ -16,33 +19,37 @@ function App() {
     });
   };
 
+  const deletedItemDatahandler = (item) => {
+    setItems((prev) => {
+      return prev.filter((i) => i.id !== item.id);
+    });
+  };
+
   const fetchItems = async () => {
     const data = await axios.get("http://localhost:8000/items");
     setItems(data.data);
   };
+  const getRevenue = async () => {
+    const revenue = await axios.get("http://localhost:8000/items/totalRevenue");
+    setRevenue(revenue.data.total_amount);
+  };
+
+  useEffect(() => {
+    getRevenue();
+  }, []);
 
   useEffect(() => {
     fetchItems();
   }, [items]);
 
-  // const revenue = (async function () {
-  //   const rev = await axios.get("http://localhost:8000/items/totalRevenue");
-  //   return rev.data.total_amount;
-  // })();
-
-  const clickHandler = async () => {
-    const revenue = await axios.get("http://localhost:8000/items/totalRevenue");
-    console.log(revenue.data.total_amount);
-    return revenue.data.total_amount;
-  };
-
   return (
     <div className="App">
-      <h1>Items</h1>
+      <Header />
       <NewItem onAddItem={addItemHandler} />
       {items.map((item) => (
         <Item
           onUpdateItemData={updatedItemDataHandler}
+          onDeleteItemData={deletedItemDatahandler}
           id={item.id}
           key={item.id}
           name={item.name}
@@ -51,8 +58,8 @@ function App() {
           date={item.createdAt}
         />
       ))}
-      <div>
-        <button onClick={clickHandler}>Calculate Revenue</button>
+      <div className="footer">
+        <h2>Revenue: {revenue ? "0" : revenue}</h2>
       </div>
     </div>
   );
