@@ -87,5 +87,12 @@ exports.getTotalRevenue = catchAsync(async (req, res, next) => {
     ],
   });
   res.status(200).json(total[0]);
-  // res.render("index", { total: total[0].total_amount });
+});
+
+exports.getTotalCost = catchAsync(async (req, res, next) => {
+  const total = await Item.findAll({
+    attributes: [[sequelize.fn("SUM", sequelize.col("cost")), "total_cost"]],
+    where: { status: "Sold" },
+  });
+  res.status(200).json(total[0]);
 });

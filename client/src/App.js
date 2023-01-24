@@ -8,6 +8,7 @@ import axios from "axios";
 function App() {
   const [items, setItems] = useState([]);
   const [revenue, setRevenue] = useState("");
+  const [cost, setCost] = useState("");
   const addItemHandler = (item) => {
     setItems((prev) => {
       return [item, ...prev];
@@ -34,9 +35,18 @@ function App() {
     setRevenue(revenue.data.total_amount);
   };
 
+  const getCost = async () => {
+    const cost = await axios.get("http://localhost:8000/items/totalCost");
+    setCost(cost.data.total_cost);
+  };
+
   useEffect(() => {
     getRevenue();
-  }, []);
+  }, [items]);
+
+  useEffect(() => {
+    getCost();
+  }, [items]);
 
   useEffect(() => {
     fetchItems();
@@ -59,7 +69,9 @@ function App() {
         />
       ))}
       <div className="footer">
-        <h2>Revenue: {revenue ? "0" : revenue}</h2>
+        <h2>Revenue: {revenue === null ? "0" : revenue}</h2>
+        <h2>Cost: {cost === null ? "0" : cost}</h2>
+        <h2>Profit: {revenue - cost}</h2>
       </div>
     </div>
   );

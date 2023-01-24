@@ -13,5 +13,6 @@ router
   .delete(itemController.deleteItem);
 
 router.route("/totalRevenue").get(itemController.getTotalRevenue);
+router.route("/totalCost").get(itemController.getTotalCost);
 
 module.exports = router;
