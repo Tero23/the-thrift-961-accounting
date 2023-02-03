@@ -28,6 +28,7 @@ exports.addItem = catchAsync(async (req, res, next) => {
     cost,
     price,
   });
+  console.log(new Date(item.updatedAt).getMonth());
   const availableItems = await Item.findAll({ where: { status: "Available" } });
   await redisClient.setEx("items", 3600, JSON.stringify(availableItems));
   res.status(201).json({
@@ -85,6 +86,20 @@ exports.getTotalRevenue = catchAsync(async (req, res, next) => {
     attributes: [
       [sequelize.fn("SUM", sequelize.col("amount")), "total_amount"],
     ],
+    where: {
+      updatedAt: {
+        [sequelize.Op.gte]: new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          1
+        ),
+        [sequelize.Op.lt]: new Date(
+          new Date().getFullYear(),
+          new Date().getMonth() + 1,
+          1
+        ),
+      },
+    },
   });
   res.status(200).json(total[0]);
 });
@@ -93,6 +108,20 @@ exports.getTotalCost = catchAsync(async (req, res, next) => {
   const total = await Item.findAll({
     attributes: [[sequelize.fn("SUM", sequelize.col("cost")), "total_cost"]],
     where: { status: "Sold" },
+    where: {
+      updatedAt: {
+        [sequelize.Op.gte]: new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          1
+        ),
+        [sequelize.Op.lt]: new Date(
+          new Date().getFullYear(),
+          new Date().getMonth() + 1,
+          1
+        ),
+      },
+    },
   });
   res.status(200).json(total[0]);
 });
