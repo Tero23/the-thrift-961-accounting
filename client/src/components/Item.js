@@ -25,7 +25,10 @@ const Item = (props) => {
       <div className="expense-item__description">
         <h2>{props.name}</h2>
         <div className="expense-item__price">Cost: {props.cost}L.L.</div>
-        <div className="expense-item__price">Price: {props.price}L.L.</div>
+        <div className="expense-item__price">
+          Price: {props.price}
+          {props.price > 1000 ? "L.L." : "$"}
+        </div>
         <div className="new-expense__actions">
           <button onClick={soldClickHandler}>Sold</button>
         </div>

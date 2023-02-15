@@ -64,11 +64,19 @@ exports.deleteItem = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllAvailableItems = catchAsync(async (req, res, next) => {
-  const items = await redisClient.get("items");
-  if (items != null) return res.json(JSON.parse(items));
+  const x = await redisClient.get("items");
+  if (x != null) {
+    console.log(x);
+    const items = JSON.parse(x);
+    items.sort((a, b) => (a.name > b.name ? 1 : a.name < b.name ? -1 : 0));
+    return res.json(items);
+  }
+
   const newItems = await Item.findAll({
     where: { status: "Available" },
+    order: [["name", "ASC"]],
   });
+  console.log(newItems);
   if (!newItems.length)
     return res.status(200).json({
       message: "There are no available items!",
@@ -82,11 +90,14 @@ exports.getAllAvailableItems = catchAsync(async (req, res, next) => {
 });
 
 exports.getTotalRevenue = catchAsync(async (req, res, next) => {
-  const total = await Revenue.findAll({
+  const totalLebanese = await Revenue.findAll({
     attributes: [
-      [sequelize.fn("SUM", sequelize.col("amount")), "total_amount"],
+      [sequelize.fn("SUM", sequelize.col("amount")), "total_amount_lebanese"],
     ],
     where: {
+      amount: {
+        [sequelize.Op.gte]: 1000,
+      },
       updatedAt: {
         [sequelize.Op.gte]: new Date(
           new Date().getFullYear(),
@@ -101,7 +112,34 @@ exports.getTotalRevenue = catchAsync(async (req, res, next) => {
       },
     },
   });
-  res.status(200).json(total[0]);
+
+  const totalDolar = await Revenue.findAll({
+    attributes: [
+      [sequelize.fn("SUM", sequelize.col("amount")), "total_amount_dolar"],
+    ],
+    where: {
+      amount: {
+        [sequelize.Op.lt]: 1000,
+      },
+      updatedAt: {
+        [sequelize.Op.gte]: new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          1
+        ),
+        [sequelize.Op.lt]: new Date(
+          new Date().getFullYear(),
+          new Date().getMonth() + 1,
+          1
+        ),
+      },
+    },
+  });
+
+  res.status(200).json({
+    lebanese: totalLebanese[0],
+    dolar: totalDolar[0],
+  });
 });
 
 exports.getTotalCost = catchAsync(async (req, res, next) => {

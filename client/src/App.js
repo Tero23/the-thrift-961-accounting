@@ -7,7 +7,8 @@ import axios from "axios";
 
 function App() {
   const [items, setItems] = useState([]);
-  const [revenue, setRevenue] = useState("");
+  const [revenueLeb, setRevenueLeb] = useState("");
+  const [revenueDolar, setRevenueDolar] = useState("");
   const [cost, setCost] = useState("");
   const addItemHandler = (item) => {
     setItems((prev) => {
@@ -32,7 +33,8 @@ function App() {
   };
   const getRevenue = async () => {
     const revenue = await axios.get("http://localhost:8000/items/totalRevenue");
-    setRevenue(revenue.data.total_amount);
+    setRevenueLeb(revenue.data.lebanese.total_amount_lebanese);
+    setRevenueDolar(revenue.data.dolar.total_amount_dolar);
   };
 
   const getCost = async () => {
@@ -69,9 +71,14 @@ function App() {
         />
       ))}
       <div className="footer">
-        <h2>Revenue: {revenue === null ? "0" : revenue}</h2>
+        <h2>
+          Revenue:{" "}
+          {revenueLeb === null && revenueDolar === null
+            ? "0"
+            : `${revenueLeb}L.L.   $${revenueDolar}`}
+        </h2>
         <h2>Cost: {cost === null ? "0" : cost}</h2>
-        <h2>Profit: {revenue - cost}</h2>
+        <h2>Profit: {`${revenueLeb - cost}   $${revenueDolar}`}</h2>
       </div>
     </div>
   );
